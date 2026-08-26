@@ -1,0 +1,53 @@
+server:
+  port: 2333
+  address: 0.0.0.0
+
+plugins:
+  youtube:
+    enabled: true
+    allowSearch: true
+    allowDirectVideoIds: true
+    oauth:
+      enabled: true
+      refreshToken: "1//0gIssYrARte1kCgYIARAAGBASNwF-L9Iri9nHw5CsKvscIainZn2sP6ZWabmuonuf1nTbbRIUGtCJMJvvCPRoX0isz04MRvadgDQ"
+    clients:
+      - MUSIC
+      - ANDROID_TESTSUITE
+      - TVHTML5EMBEDDED
+      - WEB
+      - ANDROID_MUSIC
+      - IOS
+      - TV
+
+lavalink:
+  plugins:
+    - dependency: "dev.lavalink.youtube:youtube-plugin:f45bbb7aebfcbc1c553769e04af6cd43afa8b7c3"
+      snapshot: true
+      repository: "https://maven.lavalink.dev/snapshots"
+  server:
+    password: "RadioBotSecure2026"
+    sources:
+      youtube: false
+      bandcamp: true
+      soundcloud: true
+      twitch: true
+      vimeo: true
+      http: true
+      local: false
+    bufferDurationMs: 400
+    frameBufferDurationMs: 5000
+    youtubePlaylistLoadLimit: 6
+    playerUpdateInterval: 5
+    youtubeSearchEnabled: true
+    soundcloudSearchEnabled: true
+    gc-warnings: true
+
+logging:
+  file:
+    max-history: 7
+    max-size: 25MB
+  path: ./logs/
+
+  level:
+    root: INFO
+    lavalink: INFO

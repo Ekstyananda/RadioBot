@@ -1,0 +1,11 @@
+{
+  "name": "rich-music-api",
+  "version": "1.0.0",
+  "description": "YouTube Music API Proxy",
+  "main": "server.js",
+  "dependencies": {
+    "@distube/ytdl-core": "^4.16.12",
+    "express": "^4.19.2",
+    "play-dl": "^1.9.7"
+  }
+}

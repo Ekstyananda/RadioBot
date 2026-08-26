@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  radio-bot:
+    build: .
+    container_name: radio-ssfm-bot
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/app/data
+      - ./templates:/app/templates
+      - ./cogs:/app/cogs
+    networks:
+      - radio-net
+    depends_on:
+      - ytm-api
+      - lavalink
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 556M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  ytm-api:
+    image: node:20-alpine
+    container_name: ytm_api
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./ytm_api:/app
+    networks:
+      - radio-net
+    # Otomatis install express dan jalankan server.js
+    command: sh -c "npm install && node server.js"
+
+  lavalink:
+    image: ghcr.io/lavalink-devs/lavalink:4
+    container_name: lavalink
+    restart: unless-stopped
+    volumes:
+      - ./lavalink/application.yml:/opt/Lavalink/application.yml
+    networks:
+      - radio-net
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 384M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  radio-net:
+    driver: bridge

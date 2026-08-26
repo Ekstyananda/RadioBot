@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radio SSFM — Dashboard</title>
+    <meta name="description" content="Web Dashboard untuk Radio SSFM Discord Bot — kontrol radio & musik langsung dari browser.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════════
+           CSS VARIABLES & RESET
+           ═══════════════════════════════════════════ */
+        :root {
+            --bg-primary: #0a0e1a;
+            --bg-secondary: #111827;
+            --bg-card: rgba(17, 24, 39, 0.7);
+            --bg-card-hover: rgba(24, 34, 56, 0.85);
+            --glass-border: rgba(255, 255, 255, 0.06);
+            --glass-border-hover: rgba(255, 255, 255, 0.12);
+
+            --accent-purple: #8b5cf6;
+            --accent-purple-glow: rgba(139, 92, 246, 0.3);
+            --accent-blue: #3b82f6;
+            --accent-blue-glow: rgba(59, 130, 246, 0.25);
+            --accent-green: #10b981;
+            --accent-green-glow: rgba(16, 185, 129, 0.25);
+            --accent-red: #ef4444;
+            --accent-amber: #f59e0b;
+            --accent-cyan: #06b6d4;
+
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+
+            --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+            --shadow-glow-purple: 0 0 30px rgba(139, 92, 246, 0.15);
+            --shadow-glow-blue: 0 0 30px rgba(59, 130, 246, 0.15);
+
+            --transition-fast: 0.15s ease;
+            --transition-base: 0.25s ease;
+            --transition-slow: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse 80% 60% at 20% 10%, rgba(139, 92, 246, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 80% 80%, rgba(59, 130, 246, 0.06) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ═══════════════════════════════════════════
+           LAYOUT
+           ═══════════════════════════════════════════ */
+        .app {
+            position: relative;
+            z-index: 1;
+            max-width: 1360px;
+            margin: 0 auto;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-height: 100vh;
+        }
+
+        /* ═══════════════════════════════════════════
+           TOP BAR
+           ═══════════════════════════════════════════ */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            box-shadow: var(--shadow-glow-purple);
+        }
+
+        .brand h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .brand h1 span {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .server-select {
+            padding: 10px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            outline: none;
+            min-width: 200px;
+            transition: border-color var(--transition-fast);
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 32px;
+        }
+        .server-select:focus { border-color: var(--accent-purple); }
+        .server-select option { background: var(--bg-secondary); }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+        .badge-mode {
+            background: rgba(139, 92, 246, 0.15);
+            color: var(--accent-purple);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+        .badge-status {
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+        }
+        .badge-status.playing {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+        .badge-status .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        .badge-status.playing .dot {
+            animation: pulse-dot 1.5s infinite;
+        }
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.7); }
+        }
+
+        /* ═══════════════════════════════════════════
+           CARDS (Glassmorphism)
+           ═══════════════════════════════════════════ */
+        .card {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-card);
+            transition: border-color var(--transition-base), box-shadow var(--transition-base);
+        }
+        .card:hover {
+            border-color: var(--glass-border-hover);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .card-title .icon {
+            font-size: 1rem;
+        }
+
+        /* ═══════════════════════════════════════════
+           MAIN GRID
+           ═══════════════════════════════════════════ */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            grid-template-rows: auto auto;
+            gap: 20px;
+            flex: 1;
+        }
+
+        /* ═══════════════════════════════════════════
+           NOW PLAYING HERO CARD
+           ═══════════════════════════════════════════ */
+        .now-playing-card {
+            grid-column: 1;
+            grid-row: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .now-playing-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 180deg, transparent, rgba(139, 92, 246, 0.04), transparent 30%);
+            animation: rotate-bg 20s linear infinite;
+            pointer-events: none;
+        }
+        @keyframes rotate-bg {
+            to { transform: rotate(360deg); }
+        }
+
+        .np-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .np-main {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .np-artwork {
+            width: 120px;
+            height: 120px;
+            border-radius: var(--radius-md);
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.2));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            flex-shrink: 0;
+            overflow: hidden;
+            border: 1px solid var(--glass-border);
+            position: relative;
+        }
+        .np-artwork img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .np-artwork.playing {
+            box-shadow: 0 0 40px rgba(139, 92, 246, 0.2);
+        }
+
+        .np-info { flex: 1; min-width: 0; }
+
+        .np-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--accent-purple);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Equalizer animation */
+        .equalizer {
+            display: inline-flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 12px;
+        }
+        .equalizer .bar {
+            width: 3px;
+            background: var(--accent-purple);
+            border-radius: 2px;
+            animation: eq-bounce 0.8s ease-in-out infinite;
+        }
+        .equalizer .bar:nth-child(1) { height: 40%; animation-delay: 0s; }
+        .equalizer .bar:nth-child(2) { height: 80%; animation-delay: 0.15s; }
+        .equalizer .bar:nth-child(3) { height: 50%; animation-delay: 0.3s; }
+        .equalizer .bar:nth-child(4) { height: 90%; animation-delay: 0.1s; }
+        .equalizer .bar:nth-child(5) { height: 60%; animation-delay: 0.25s; }
+
+        .equalizer.paused .bar { animation-play-state: paused; }
+
+        @keyframes eq-bounce {
+            0%, 100% { transform: scaleY(0.3); }
+            50% { transform: scaleY(1); }
+        }
+
+        .np-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+            margin-bottom: 6px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .np-artist {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Controls */
+        .controls-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            background: rgba(255, 255, 255, 0.04);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+            outline: none;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn:hover { background: rgba(255, 255, 255, 0.08); border-color: var(--glass-border-hover); transform: translateY(-1px); }
+        .btn:active { transform: translateY(0) scale(0.97); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-purple), #7c3aed);
+            border-color: transparent;
+            box-shadow: 0 2px 12px var(--accent-purple-glow);
+        }
+        .btn-primary:hover { filter: brightness(1.15); box-shadow: 0 4px 20px var(--accent-purple-glow); }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.2);
+            color: var(--accent-red);
+        }
+        .btn-danger:hover { background: rgba(239, 68, 68, 0.25); }
+
+        .btn-success {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.2);
+            color: var(--accent-green);
+        }
+        .btn-success:hover { background: rgba(16, 185, 129, 0.25); }
+
+        .btn-blue {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: rgba(59, 130, 246, 0.2);
+            color: var(--accent-blue);
+        }
+        .btn-blue:hover { background: rgba(59, 130, 246, 0.25); }
+
+        .btn-loading { pointer-events: none; opacity: 0.6; }
+
+        .controls-sep {
+            width: 1px;
+            height: 28px;
+            background: var(--glass-border);
+            margin: 0 4px;
+        }
+
+        /* Request Input */
+        .request-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 11px 16px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-sm);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color var(--transition-fast);
+        }
+        .input-field::placeholder { color: var(--text-muted); }
+        .input-field:focus { border-color: var(--accent-purple); box-shadow: 0 0 0 3px var(--accent-purple-glow); }
+
+        /* ═══════════════════════════════════════════
+           SIDEBAR (System Health)
+           ═══════════════════════════════════════════ */
+        .sidebar-stack {
+            grid-column: 2;
+            grid-row: 1 / 3;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* System Health */
+        .health-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .health-item {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius-sm);
+            padding: 14px;
+            text-align: center;
+        }
+
+        .health-value {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 4px;
+        }
+        .health-value.cpu { color: var(--accent-blue); }
+        .health-value.ram { color: var(--accent-purple); }
+        .health-value.temp { color: var(--accent-amber); }
+        .health-value.ping { color: var(--accent-cyan); }
+
+        .health-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+        }
+
+        .health-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .health-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.6s ease-out;
+            width: 0%;
+        }
+        .health-bar-fill.cpu { background: var(--accent-blue); }
+        .health-bar-fill.ram { background: var(--accent-purple); }
+
+        .uptime-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 8px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            grid-column: 1 / -1;
+        }
+        .uptime-row strong { color: var(--text-primary); font-weight: 600; }
+
+        /* ═══════════════════════════════════════════
+           QUEUE PANEL
+           ═══════════════════════════════════════════ */
+        .queue-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .queue-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: var(--radius-sm);
+            border: 1px solid transparent;
+            transition: all var(--transition-fast);
+        }
+        .queue-item:hover {
+            background: rgba(0, 0, 0, 0.25);
+            border-color: var(--glass-border);
+        }
+
+        .queue-num {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .queue-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .queue-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .queue-artist {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .queue-empty {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        .queue-empty .icon { font-size: 2rem; margin-bottom: 8px; }
+
+        /* ═══════════════════════════════════════════
+           BOTTOM GRID (Logs + Radio)
+           ═══════════════════════════════════════════ */
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+        }
+
+        /* Live Logs */
+        .log-container {
+            background: rgba(0, 0, 0, 0.45);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+            font-size: 0.78rem;
+            line-height: 1.6;
+            color: #a5f3b4;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .log-line { padding: 1px 0; }
+        .log-line .ts { color: var(--text-muted); }
+        .log-line.warn { color: #fbbf24; }
+        .log-line.error { color: #f87171; }
+        .log-line.info { color: #a5f3b4; }
+
+        /* ═══════════════════════════════════════════
+           RADIO STATIONS
+           ═══════════════════════════════════════════ */
+        .radio-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 160px;
+            overflow-y: auto;
+            margin-bottom: 16px;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 14px;
+            background: rgba(0, 0, 0, 0.15);
+            border: 1px solid transparent;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        .radio-item:hover {
+            background: rgba(59, 130, 246, 0.08);
+            border-color: rgba(59, 130, 246, 0.15);
+        }
+        .radio-item.active {
+            background: rgba(59, 130, 246, 0.12);
+            border-color: rgba(59, 130, 246, 0.25);
+        }
+
+        .radio-item-info { flex: 1; min-width: 0; }
+
+        .radio-item-name {
+            font-size: 0.85rem;
+            font-weight: 600;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .radio-item-url {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 180px;
+        }
+
+        .radio-item-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+        .radio-item:hover .radio-item-actions { opacity: 1; }
+
+        .btn-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            border: none;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            transition: all var(--transition-fast);
+        }
+        .btn-icon:hover { background: rgba(255, 255, 255, 0.12); color: var(--text-primary); }
+        .btn-icon.del:hover { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+
+        .radio-form {
+            display: flex;
+            gap: 8px;
+        }
+        .radio-form .input-field {
+            font-size: 0.8rem;
+            padding: 9px 12px;
+        }
+
+        /* ═══════════════════════════════════════════
+           TOAST NOTIFICATIONS
+           ═══════════════════════════════════════════ */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            padding: 12px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            pointer-events: auto;
+            animation: toast-in 0.35s ease forwards;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            max-width: 360px;
+        }
+        .toast.success { border-left: 3px solid var(--accent-green); }
+        .toast.error { border-left: 3px solid var(--accent-red); }
+        .toast.info { border-left: 3px solid var(--accent-blue); }
+        .toast.removing { animation: toast-out 0.3s ease forwards; }
+
+        @keyframes toast-in {
+            from { opacity: 0; transform: translateY(16px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes toast-out {
+            to { opacity: 0; transform: translateY(8px) scale(0.96); }
+        }
+
+        /* ═══════════════════════════════════════════
+           SCROLLBAR
+           ═══════════════════════════════════════════ */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
+        /* ═══════════════════════════════════════════
+           RESPONSIVE
+           ═══════════════════════════════════════════ */
+        @media (max-width: 960px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            .sidebar-stack {
+                grid-column: 1;
+                grid-row: auto;
+            }
+            .bottom-grid {
+                grid-template-columns: 1fr;
+            }
+            .np-main { flex-direction: column; text-align: center; }
+            .np-title { white-space: normal; font-size: 1.4rem; }
+            .controls-row { justify-content: center; }
+            .request-row { flex-direction: column; }
+        }
+
+        @media (max-width: 600px) {
+            .app { padding: 12px; gap: 12px; }
+            .topbar { flex-direction: column; align-items: stretch; }
+            .topbar-right { justify-content: space-between; }
+            .server-select { min-width: unset; flex: 1; }
+            .health-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .card { padding: 16px; }
+            .np-artwork { width: 90px; height: 90px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app">
+    <!-- ═══ TOP BAR ═══ -->
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-icon">📻</div>
+            <h1><span>Radio SSFM</span> Dashboard</h1>
+        </div>
+        <div class="topbar-right">
+            <select class="server-select" id="serverSelect" onchange="updateServerView()">
+                <option value="" disabled selected>Memuat server...</option>
+            </select>
+            <span class="badge badge-mode" id="modeBadge">MODE: —</span>
+            <span class="badge badge-status" id="statusBadge"><span class="dot"></span> IDLE</span>
+        </div>
+    </header>
+
+    <!-- ═══ MAIN GRID ═══ -->
+    <div class="main-grid">
+        <!-- NOW PLAYING -->
+        <div class="card now-playing-card" id="nowPlayingCard">
+            <div class="np-content">
+                <div class="card-header">
+                    <span class="card-title"><span class="icon">🎧</span> Now Playing</span>
+                </div>
+
+                <div class="np-main">
+                    <div class="np-artwork" id="npArtwork">🎵</div>
+                    <div class="np-info">
+                        <div class="np-label">
+                            <div class="equalizer" id="eqAnim">
+                                <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                            </div>
+                            <span id="npLabel">SEDANG DIPUTAR</span>
+                        </div>
+                        <div class="np-title" id="npTitle">Menunggu Data...</div>
+                        <div class="np-artist" id="npArtist">Pilih server untuk memulai</div>
+                    </div>
+                </div>
+
+                <div class="controls-row">
+                    <button class="btn btn-danger" onclick="apiAction('/api/control/stop')">⏹ Stop</button>
+                    <button class="btn btn-blue" onclick="apiAction('/api/control/skip', 'POST')">⏭ Skip</button>
+                    <button class="btn" onclick="apiAction('/api/control/shuffle', 'POST')">🔀 Shuffle</button>
+                    <div class="controls-sep"></div>
+                    <button class="btn btn-success" onclick="switchMode('radio')">📻 Radio</button>
+                    <button class="btn btn-primary" onclick="switchMode('music')">🎵 Music</button>
+                </div>
+
+                <div class="request-row">
+                    <input class="input-field" type="text" id="reqInput" placeholder="Ketik judul lagu atau paste link YouTube..." onkeydown="if(event.key==='Enter') requestMusic()">
+                    <button class="btn btn-primary" onclick="requestMusic()">🎵 Request</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SIDEBAR -->
+        <div class="sidebar-stack">
+            <!-- System Health -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title"><span class="icon">📊</span> System Health</span>
+                </div>
+                <div class="health-grid">
+                    <div class="health-item">
+                        <div class="health-value cpu" id="cpuVal">0%</div>
+                        <div class="health-label">CPU</div>
+                        <div class="health-bar"><div class="health-bar-fill cpu" id="cpuBar"></div></div>
+                    </div>
+                    <div class="health-item">
+                        <div class="health-value ram" id="ramVal">0%</div>
+                        <div class="health-label">RAM</div>
+                        <div class="health-bar"><div class="health-bar-fill ram" id="ramBar"></div></div>
+                    </div>
+                    <div class="health-item">
+                        <div class="health-value temp" id="tempVal">—</div>
+                        <div class="health-label">Suhu</div>
+                    </div>
+                    <div class="health-item">
+                        <div class="health-value ping" id="pingVal">—</div>
+                        <div class="health-label">Ping</div>
+                    </div>
+                    <div class="uptime-row">
+                        ⏱ Uptime: <strong id="uptimeVal">—</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Queue -->
+            <div class="card" style="flex:1; display:flex; flex-direction:column;">
+                <div class="card-header">
+                    <span class="card-title"><span class="icon">📋</span> Antrian Musik</span>
+                    <span class="badge badge-mode" id="queueCount" style="font-size:0.7rem;">0 lagu</span>
+                </div>
+                <div class="queue-list" id="queueList">
+                    <div class="queue-empty">
+                        <div class="icon">🎶</div>
+                        <div>Antrian kosong<br><span style="font-size:0.75rem;">Autoplay akan mengisi otomatis</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM: Logs -->
+        <div class="card" style="grid-column: 1;">
+            <div class="card-header">
+                <span class="card-title"><span class="icon">🖥</span> Live Logs</span>
+                <button class="btn" style="padding:5px 12px; font-size:0.7rem;" onclick="clearLogs()">Bersihkan</button>
+            </div>
+            <div class="log-container" id="logContainer">
+                <div class="log-line info">Menunggu log dari server...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RADIO STATIONS (Full Width) -->
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title"><span class="icon">📻</span> Radio Stations</span>
+        </div>
+        <div class="radio-list" id="radioList"></div>
+        <div class="radio-form">
+            <input class="input-field" type="text" id="radioName" placeholder="Nama Radio (cth: Prambors)">
+            <input class="input-field" type="text" id="radioUrl" placeholder="URL Stream (.m3u8 / .mp3)" style="flex:2;">
+            <button class="btn btn-success" onclick="addRadio()">➕ Tambah</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+    // ═══════════════════════════════════════════════
+    // STATE
+    // ═══════════════════════════════════════════════
+    let allGuilds = [];
+    let currentGuildId = null;
+    let logCache = '';
+
+    // ═══════════════════════════════════════════════
+    // TOAST NOTIFICATIONS
+    // ═══════════════════════════════════════════════
+    function showToast(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+        toast.innerHTML = `<span>${icons[type] || ''}</span><span>${message}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => {
+            toast.classList.add('removing');
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
+    }
+
+    // ═══════════════════════════════════════════════
+    // FETCH GUILDS & UPDATE UI
+    // ═══════════════════════════════════════════════
+    async function fetchGuilds() {
+        try {
+            const res = await fetch('/api/guilds');
+            allGuilds = await res.json();
+
+            const select = document.getElementById('serverSelect');
+            const prevId = select.value;
+
+            if (select.options.length <= 1 || !prevId) {
+                select.innerHTML = '<option value="" disabled selected>— Pilih Server Discord —</option>';
+                allGuilds.forEach(g => {
+                    const opt = document.createElement('option');
+                    opt.value = g.id;
+                    opt.textContent = `${g.name} (${g.member_count} member)`;
+                    select.appendChild(opt);
+                });
+                if (prevId && allGuilds.find(g => g.id === prevId)) {
+                    select.value = prevId;
+                }
+            }
+
+            updateServerView();
+        } catch (e) {
+            console.error('Gagal load guilds', e);
+        }
+    }
+
+    function updateServerView() {
+        const select = document.getElementById('serverSelect');
+        currentGuildId = select.value;
+        if (!currentGuildId) return;
+
+        const guild = allGuilds.find(g => g.id === currentGuildId);
+        if (!guild) return;
+
+        // Mode badge
+        const modeBadge = document.getElementById('modeBadge');
+        if (guild.mode === 'music') {
+            modeBadge.textContent = '🎵 MUSIC';
+            modeBadge.style.background = 'rgba(139, 92, 246, 0.15)';
+            modeBadge.style.color = 'var(--accent-purple)';
+            modeBadge.style.borderColor = 'rgba(139, 92, 246, 0.2)';
+        } else {
+            modeBadge.textContent = '📻 RADIO';
+            modeBadge.style.background = 'rgba(59, 130, 246, 0.15)';
+            modeBadge.style.color = 'var(--accent-blue)';
+            modeBadge.style.borderColor = 'rgba(59, 130, 246, 0.2)';
+        }
+
+        // Status badge
+        const statusBadge = document.getElementById('statusBadge');
+        statusBadge.className = 'badge badge-status';
+        if (guild.status === 'Playing') {
+            statusBadge.innerHTML = '<span class="dot"></span> PLAYING';
+            statusBadge.classList.add('playing');
+        } else if (guild.status === 'Connected') {
+            statusBadge.innerHTML = '<span class="dot"></span> CONNECTED';
+        } else {
+            statusBadge.innerHTML = '<span class="dot"></span> IDLE';
+        }
+
+        // Now Playing
+        document.getElementById('npTitle').textContent = guild.now_playing || 'Tidak ada yang diputar';
+        document.getElementById('npArtist').textContent = guild.artist || (guild.mode === 'radio' ? 'Radio Mode' : 'Music Mode');
+
+        // Label
+        const npLabel = document.getElementById('npLabel');
+        npLabel.textContent = guild.mode === 'radio' ? 'SIARAN LANGSUNG' : 'SEDANG DIPUTAR';
+
+        // Equalizer animation
+        const eq = document.getElementById('eqAnim');
+        if (guild.status === 'Playing') {
+            eq.classList.remove('paused');
+        } else {
+            eq.classList.add('paused');
+        }
+
+        // Artwork
+        const artwork = document.getElementById('npArtwork');
+        if (guild.thumbnail) {
+            artwork.innerHTML = `<img src="${guild.thumbnail}" alt="Album Art">`;
+            artwork.classList.add('playing');
+        } else {
+            artwork.innerHTML = guild.mode === 'radio' ? '📻' : '🎵';
+            artwork.classList.toggle('playing', guild.status === 'Playing');
+        }
+
+        // Queue
+        renderQueue(guild.queue || []);
+    }
+
+    function renderQueue(queue) {
+        const list = document.getElementById('queueList');
+        const countBadge = document.getElementById('queueCount');
+        countBadge.textContent = `${queue.length} lagu`;
+
+        if (!queue.length) {
+            list.innerHTML = `
+                <div class="queue-empty">
+                    <div class="icon">🎶</div>
+                    <div>Antrian kosong<br><span style="font-size:0.75rem;">Autoplay akan mengisi otomatis</span></div>
+                </div>`;
+            return;
+        }
+
+        list.innerHTML = queue.slice(0, 20).map((t, i) => `
+            <div class="queue-item">
+                <span class="queue-num">${i + 1}</span>
+                <div class="queue-info">
+                    <div class="queue-title">${escapeHtml(t.title || 'Unknown')}</div>
+                    <div class="queue-artist">${escapeHtml(t.artist || '')}</div>
+                </div>
+            </div>
+        `).join('');
+
+        if (queue.length > 20) {
+            list.innerHTML += `<div style="text-align:center;padding:8px;color:var(--text-muted);font-size:0.8rem;">+${queue.length - 20} lagu lainnya</div>`;
+        }
+    }
+
+    // ═══════════════════════════════════════════════
+    // API ACTIONS
+    // ═══════════════════════════════════════════════
+    async function apiAction(endpoint, method = 'GET', body = null) {
+        if (!currentGuildId) return showToast('Pilih server Discord terlebih dahulu!', 'error');
+
+        const url = `${endpoint}?guild_id=${currentGuildId}`;
+        const options = { method };
+
+        if (body) {
+            options.headers = { 'Content-Type': 'application/json' };
+            options.body = JSON.stringify(body);
+        }
+
+        try {
+            const res = await fetch(url, options);
+            const data = await res.json();
+            if (data.status === 'error') {
+                showToast(data.message || 'Terjadi kesalahan', 'error');
+            } else {
+                showToast(data.message || 'Berhasil!', 'success');
+                fetchGuilds();
+            }
+        } catch (e) {
+            showToast('Gagal menghubungi server: ' + e.message, 'error');
+        }
+    }
+
+    function requestMusic() {
+        const input = document.getElementById('reqInput');
+        const query = input.value.trim();
+        if (!query) return showToast('Masukkan judul lagu atau link YouTube!', 'error');
+
+        apiAction('/api/control/request', 'POST', { query });
+        input.value = '';
+    }
+
+    function switchMode(mode) {
+        if (!currentGuildId) return showToast('Pilih server Discord terlebih dahulu!', 'error');
+        apiAction(`/api/control/mode/${mode}`, 'POST');
+    }
+
+    function playRadio(name) {
+        apiAction(`/api/control/play/${encodeURIComponent(name)}`);
+    }
+
+    // ═══════════════════════════════════════════════
+    // SYSTEM HEALTH
+    // ═══════════════════════════════════════════════
+    async function fetchHealth() {
+        try {
+            const res = await fetch('/api/stats');
+            const data = await res.json();
+
+            document.getElementById('cpuVal').textContent = data.cpu + '%';
+            document.getElementById('cpuBar').style.width = data.cpu + '%';
+
+            document.getElementById('ramVal').textContent = data.ram + '%';
+            document.getElementById('ramBar').style.width = data.ram + '%';
+
+            document.getElementById('tempVal').textContent = data.temp ? data.temp + '°C' : '—';
+            document.getElementById('pingVal').textContent = data.ping + 'ms';
+            document.getElementById('uptimeVal').textContent = data.uptime || '—';
+        } catch (e) {}
+    }
+
+    // ═══════════════════════════════════════════════
+    // LIVE LOGS
+    // ═══════════════════════════════════════════════
+    async function fetchLogs() {
+        try {
+            const res = await fetch('/api/logs');
+            const logs = await res.json();
+            const container = document.getElementById('logContainer');
+            const newHtml = logs.map(l => {
+                let cls = 'info';
+                if (l.includes('ERROR') || l.includes('❌') || l.includes('CRITICAL')) cls = 'error';
+                else if (l.includes('WARNING') || l.includes('⚠️')) cls = 'warn';
+                
+                // Separate timestamp
+                const parts = l.match(/^(\d{2}:\d{2}:\d{2})\s*-\s*\w+\s*-\s*(.*)$/);
+                if (parts) {
+                    return `<div class="log-line ${cls}"><span class="ts">[${parts[1]}]</span> ${escapeHtml(parts[2])}</div>`;
+                }
+                return `<div class="log-line ${cls}">${escapeHtml(l)}</div>`;
+            }).join('');
+
+            if (newHtml !== logCache) {
+                container.innerHTML = newHtml;
+                container.scrollTop = container.scrollHeight;
+                logCache = newHtml;
+            }
+        } catch (e) {}
+    }
+
+    function clearLogs() {
+        document.getElementById('logContainer').innerHTML = '<div class="log-line info">Log dibersihkan.</div>';
+        logCache = '';
+    }
+
+    // ═══════════════════════════════════════════════
+    // RADIO STATIONS
+    // ═══════════════════════════════════════════════
+    async function fetchRadios() {
+        try {
+            const res = await fetch('/api/stations');
+            const stations = await res.json();
+            const list = document.getElementById('radioList');
+
+            if (!Object.keys(stations).length) {
+                list.innerHTML = '<div class="queue-empty"><div class="icon">📻</div><div>Belum ada stasiun radio</div></div>';
+                return;
+            }
+
+            list.innerHTML = Object.entries(stations).map(([name, url]) => `
+                <div class="radio-item" onclick="playRadio('${escapeAttr(name)}')">
+                    <div class="radio-item-info">
+                        <div class="radio-item-name">📻 ${escapeHtml(name)}</div>
+                        <div class="radio-item-url">${escapeHtml(url)}</div>
+                    </div>
+                    <div class="radio-item-actions">
+                        <button class="btn-icon" title="Play" onclick="event.stopPropagation(); playRadio('${escapeAttr(name)}')">▶</button>
+                        <button class="btn-icon del" title="Hapus" onclick="event.stopPropagation(); deleteRadio('${escapeAttr(name)}')">✕</button>
+                    </div>
+                </div>
+            `).join('');
+        } catch (e) {}
+    }
+
+    async function addRadio() {
+        const nameEl = document.getElementById('radioName');
+        const urlEl = document.getElementById('radioUrl');
+        const name = nameEl.value.trim();
+        const url = urlEl.value.trim();
+
+        if (!name || !url) return showToast('Isi nama dan URL radio!', 'error');
+
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('url', url);
+
+        try {
+            await fetch('/api/stations', { method: 'POST', body: formData });
+            nameEl.value = '';
+            urlEl.value = '';
+            showToast(`Radio "${name}" ditambahkan!`, 'success');
+            fetchRadios();
+        } catch (e) {
+            showToast('Gagal menambah radio', 'error');
+        }
+    }
+
+    async function deleteRadio(name) {
+        if (!confirm(`Hapus stasiun "${name}"?`)) return;
+        try {
+            const res = await fetch(`/api/stations/${encodeURIComponent(name)}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (data.status === 'success') {
+                showToast(`Radio "${name}" dihapus`, 'success');
+                fetchRadios();
+            } else {
+                showToast(data.message || 'Gagal menghapus', 'error');
+            }
+        } catch (e) {
+            showToast('Gagal menghapus radio', 'error');
+        }
+    }
+
+    // ═══════════════════════════════════════════════
+    // HELPERS
+    // ═══════════════════════════════════════════════
+    function escapeHtml(s) {
+        const div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+    }
+
+    function escapeAttr(s) {
+        return s.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    // ═══════════════════════════════════════════════
+    // INIT
+    // ═══════════════════════════════════════════════
+    fetchRadios();
+    fetchGuilds();
+    fetchHealth();
+    fetchLogs();
+
+    setInterval(() => {
+        fetchGuilds();
+        fetchHealth();
+        fetchLogs();
+    }, 2500);
+</script>
+</body>
+</html>
